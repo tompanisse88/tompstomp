@@ -11,10 +11,14 @@
   <div class="main">
 
   <% for(var i=0;i<stomps.length;i++) {%>
-    <div class="user"><%= user %></div>
+    <% if(user[i] == user[i-1]) { %>
+      <div class="user"></div>
+      <% } else { %>
+      <div class="user"><%= user[i] %></div>
+    <% } %>
     <div class="avatar">A</div>
     <div class="chatbubble"><%= stomps[i] %></div><br>
-    <div class="messageTime"><%= date[i] %></div><br>
+    <div class="messageTime"><%= date[i].getHours() + ":" + date[i].getMinutes() %></div><br>
   <% } %>
 
   </div>

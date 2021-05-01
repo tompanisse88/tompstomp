@@ -14,8 +14,6 @@ app.use(express.static("public"));
 
 console.log(date.getDate());
 
-let userName = "Tom Nilsson"
-
 //connection to tompstomp mongoDB
 mongoose.connect("mongodb+srv://dbUser:dbUserPassword@cluster0.lnn2w.mongodb.net/tompstomp?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true});
 mongoose.connection.once("open", function(){
@@ -23,33 +21,48 @@ mongoose.connection.once("open", function(){
 }).on("error", function(error){
   console.log("ERROR IS:", error);
 });
+
+//database schema
 const stompSchema = new mongoose.Schema({
   user: String,
-  date: String,
+  date: Date,
   text: String
 });
-const Stomp = new mongoose.model("Stomp", stompSchema);
+//database Model
+const MessageModel = new mongoose.model("messagemodel", stompSchema);
+
 const stompsArray = [];
 const stompDate = [];
-Stomp.find(function(err, stomps) {
+const stompUser = [];
+
+MessageModel.find(function(err, stomps) {
   if(err) {
     console.log(err);
   } else {
     stomps.forEach(function(stomp){
       stompsArray.push(stomp.text);
       stompDate.push(stomp.date);
+      stompUser.push(stomp.user);
     });
   }
 });
 
 app.get("/", function(req, res) {
   res.set("Content-Type", "text/html");
-  res.render('index', {date: stompDate, dateToday: date.getDate(), stomps: stompsArray, user: userName });
+  res.render('index', {date: stompDate, dateToday: date.getDate(), stomps: stompsArray, user: stompUser });
+});
+
+app.get("/deletemany", function(req, res) {
+  res.set("Content-Type", "text/html");
+  MessageModel.deleteMany({user: "Tom Nilsson"}).then(function() {
+    console.log("deleted");
+  });
+  res.redirect("/");
 });
 
 app.post("/", function(req, res) {
 
-  const stomp = new Stomp({
+  const stomp = new MessageModel({
     user: "Tom Nilsson",
     date: date.getDate(),
     text: req.body.stomp
@@ -57,6 +70,7 @@ app.post("/", function(req, res) {
   stomp.save();
   stompsArray.push(req.body.stomp);
   stompDate.push(stomp.date);
+  stompUser.push(stomp.user)
   res.redirect("/");
 });
 
